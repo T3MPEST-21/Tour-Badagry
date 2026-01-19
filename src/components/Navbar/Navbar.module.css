@@ -1,0 +1,187 @@
+.navbar {
+  height: var(--header-height);
+  width: 100%;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.iconWrapper {
+    width: 36px;
+    height: 36px;
+    background-color: var(--primary-blue);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logoText {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  letter-spacing: -0.02em;
+}
+
+.navLinks {
+  display: flex;
+  list-style: none;
+  gap: 32px;
+}
+
+.navLink {
+  color: var(--gray-dark);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color var(--transition-fast);
+  position: relative;
+}
+
+.navLink:hover {
+  color: var(--primary-blue);
+}
+
+/* Optional: Active link indicator effect */
+.navLink::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--secondary-gold);
+    transition: width var(--transition-fast);
+}
+
+.navLink:hover::after {
+    width: 100%;
+}
+
+.bookBtn {
+  background: var(--primary-blue);
+  color: var(--white);
+  padding: 10px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bookBtn:hover {
+  background: var(--primary-blue-hover);
+  transform: translateY(-1px);
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.bar {
+  width: 24px;
+  height: 2px;
+  background: var(--black);
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+  border-radius: 2px;
+}
+
+/* Hamburger animation classes */
+.open:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.open:nth-child(2) {
+    opacity: 0;
+}
+.open:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile Styling */
+@media (max-width: 900px) {
+  .navLinks {
+    position: absolute;
+    top: 80px; /* header height */
+    left: 0;
+    flex-direction: column;
+    background: var(--white);
+    width: 100%;
+    height: calc(100vh - 80px); /* full height minus header */
+    padding: 40px 20px;
+    transition: transform var(--transition-normal);
+    transform: translateX(100%); /* hidden by default */
+    border-top: 1px solid var(--border-color);
+  }
+
+  .navLinks.active {
+    transform: translateX(0); /* slide in */
+  }
+
+  .navLink {
+      font-size: 1.1rem;
+      display: block;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-light);
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .bookBtn {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: block;
+    margin-top: 30px;
+  }
+
+  .bookBtnMobile {
+    width: 100%;
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 15px;
+    text-align: center;
+    border-radius: var(--border-radius-md);
+    display: block;
+    font-weight: 600;
+  }
+}
+
+/* Ensure mobile only items are hidden on desktop */
+@media (min-width: 901px) {
+    .mobileOnly {
+        display: none;
+    }
+}
