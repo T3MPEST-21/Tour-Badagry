@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import styles from './Navbar.module.css';
 
 const Navbar = () => {
@@ -13,12 +14,16 @@ const Navbar = () => {
     <nav className={styles.navbar}>
       <div className={styles.container}>
         {/* Placeholder Logo */}
+        {/* Brand Logo */}
         <Link href="/" className={styles.logo}>
-          <div className={styles.iconWrapper}>
-             {/* Simple car/pin icon placeholder */}
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 17H22V19H19V17ZM2 17H5V19H2V17ZM18.5 4H5.5C4.12 4 3 5.12 3 6.5V15.5H5.5V14H18.5V15.5H21V6.5C21 5.12 19.88 4 18.5 4ZM6.25 7.5H8.75V10H6.25V7.5ZM17.75 10H15.25V7.5H17.75V10Z" fill="white"/>
-            </svg>
+          <div className={styles.logoImageWrapper}>
+            <Image 
+              src="/logo.png" 
+              alt="Tour Badagry Logo" 
+              width={40} 
+              height={40}
+              className={styles.logoImage}
+            />
           </div>
           <span className={styles.logoText}>Tour Badagry</span>
         </Link>
