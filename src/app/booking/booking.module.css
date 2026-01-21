@@ -260,3 +260,19 @@
         padding: 24px;
     }
 }
+
+.error input, .error select, .error textarea {
+    border-color: #ff4d4f !important;
+    background-color: #fff2f0;
+}
+
+.error label {
+    color: #ff4d4f;
+}
+
+.errorText {
+    font-size: 0.75rem;
+    color: #ff4d4f;
+    margin-top: 4px;
+    font-weight: 600;
+}

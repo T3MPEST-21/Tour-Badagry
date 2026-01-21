@@ -14,7 +14,7 @@ const FleetPage = () => {
             luggage: "2 large bags",
             features: ["AC", "Bluetooth Audio", "Clean Interiors"],
             price: "₦5,000 / trip",
-            image: "/taxi-services.jpeg" // Using existing for now
+            image: "/white-sedan.png" // Using existing for now
         },
         {
             name: "Executive SUV",
@@ -23,7 +23,7 @@ const FleetPage = () => {
             luggage: "4 large bags",
             features: ["Leather Seats", "Extra Legroom", "USB Chargers"],
             price: "₦12,000 / trip",
-            image: "/Airport-transfers.jpeg"
+            image: "/SUV Black Exterior Option.png"
         },
         {
             name: "Tourism Mini-Bus",
@@ -32,7 +32,7 @@ const FleetPage = () => {
             luggage: "Ample Storage",
             features: ["Trained Tour Driver", "High Roof", "P.A System"],
             price: "₦25,000 / trip",
-            image: "/heritage-tours.webp"
+            image: "/Hiace Front View with Branding.webp"
         }
     ];
 
@@ -67,7 +67,12 @@ const FleetPage = () => {
                                     </ul>
                                     <div className={styles.cardFooter}>
                                         <span className={styles.price}>{car.price}</span>
-                                        <Link href="/booking" className={styles.bookBtn}>Book Now</Link>
+                                        <Link 
+                                            href={`/fleet/${car.name.toLowerCase().replace(/ /g, '-')}`} 
+                                            className={styles.bookBtn}
+                                        >
+                                            View Vehicle
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

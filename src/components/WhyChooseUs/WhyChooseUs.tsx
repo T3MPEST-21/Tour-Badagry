@@ -39,7 +39,7 @@ const WhyChooseUs = () => {
              <div className={styles.imageWrapper}>
                  {/* Using placeholder for now due to quota */}
                 <Image 
-                    src="/hero-bg.png" 
+                    src="/white-sedan.png" 
                     alt="Premium Badagry Fleet" 
                     fill
                     className={styles.image}
