@@ -4,11 +4,14 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './booking.module.css';
 import ScrollReveal from '@/components/ScrollReveal/ScrollReveal';
+import { createBooking } from '@/app/actions/booking';
 
 const BookingForm = () => {
     const searchParams = useSearchParams();
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [serverError, setServerError] = useState<string | null>(null);
     
     // Form State
     const [formData, setFormData] = useState({
@@ -16,7 +19,7 @@ const BookingForm = () => {
         destination: '',
         date: '',
         time: '',
-        serviceType: 'taxi', 
+        serviceType: 'taxi' as 'taxi' | 'airport' | 'tour', 
         vehicleType: '',
         fullName: '',
         email: '',
@@ -27,6 +30,13 @@ const BookingForm = () => {
         const type = searchParams.get('type');
         if (type === 'airport') setFormData(prev => ({ ...prev, serviceType: 'airport' }));
         if (type === 'tour') setFormData(prev => ({ ...prev, serviceType: 'tour' }));
+        
+        const vehicleSlug = searchParams.get('vehicle');
+        if (vehicleSlug) {
+             if(vehicleSlug === 'basic-sedan') setFormData(prev => ({ ...prev, vehicleType: 'Basic Sedan' }));
+             if(vehicleSlug === 'executive-suv') setFormData(prev => ({ ...prev, vehicleType: 'Executive SUV' }));
+             if(vehicleSlug === 'tourism-bus') setFormData(prev => ({ ...prev, vehicleType: 'Tourism Bus' }));
+        }
     }, [searchParams]);
 
     const validateStep = (currentStep: number) => {
@@ -53,6 +63,43 @@ const BookingForm = () => {
     };
     
     const prevStep = () => setStep(prev => prev - 1);
+
+    const handleSubmit = async () => {
+        setIsSubmitting(true);
+        setServerError(null);
+
+        // Map frontend form data to DB Schema
+        // service_type enum: 'fleet' | 'tour' | 'airport'
+        // We need to map 'taxi' -> 'fleet' probably, or update enum check.
+        // Let's assume 'taxi' => 'fleet'
+        let serviceTypeDB: 'fleet' | 'tour' | 'airport' = 'fleet';
+        if (formData.serviceType === 'tour') serviceTypeDB = 'tour';
+        if (formData.serviceType === 'airport') serviceTypeDB = 'airport';
+
+        const result = await createBooking({
+            service_type: serviceTypeDB,
+            service_id: formData.vehicleType || 'standard-taxi',
+            date: formData.date, // Format: YYYY-MM-DD
+            pickup_details: {
+                pickup: formData.pickup,
+                destination: formData.destination,
+                time: formData.time
+            },
+            contact_info: {
+                full_name: formData.fullName,
+                email: formData.email,
+                phone: formData.phone
+            }
+        });
+
+        setIsSubmitting(false);
+
+        if (result.success) {
+            setStep(4);
+        } else {
+            setServerError(result.error || 'An unexpected error occurred.');
+        }
+    };
 
     return (
         <div className={styles.bookingPage}>
@@ -263,14 +310,20 @@ const BookingForm = () => {
                                             className={styles.textarea}
                                         ></textarea>
                                     </div>
+                                    {serverError && (
+                                        <div className={styles.serverError}>
+                                            ⚠️ {serverError}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className={styles.actions}>
-                                    <button className={styles.backBtn} onClick={prevStep}>Back</button>
+                                    <button className={styles.backBtn} onClick={prevStep} disabled={isSubmitting}>Back</button>
                                     <button 
                                         className={styles.submitBtn} 
-                                        onClick={nextStep}
+                                        onClick={handleSubmit}
+                                        disabled={isSubmitting}
                                     >
-                                        Send Booking Inquiry
+                                        {isSubmitting ? 'Sending...' : 'Send Booking Inquiry'}
                                     </button>
                                 </div>
                             </div>
