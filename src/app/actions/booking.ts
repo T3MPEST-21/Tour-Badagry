@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/database.types'
 import { revalidatePath } from 'next/cache'
+import { ensureAuthenticated, ensureRole } from '@/lib/auth-guard'
 
 type BookingInsert = Database['public']['Tables']['bookings']['Insert']
 type BookingRow = Database['public']['Tables']['bookings']['Row']
@@ -16,157 +17,179 @@ export type ActionResponse<T> = {
 
 /**
  * Job: Securely insert booking into DB (Passenger).
+ * One Job: Create the record. Guard handles the entry requirements.
  */
-export async function createBooking(data: Omit<BookingInsert, 'user_id' | 'id' | 'created_at' | 'status' | 'driver_id' | 'price'>): Promise<ActionResponse<BookingRow>> {
-  const supabase = await createClient()
+export async function createBooking(
+  data: Omit<BookingInsert, 'user_id' | 'id' | 'created_at' | 'status' | 'driver_id' | 'price'>,
+  idempotencyKey: string
+): Promise<ActionResponse<BookingRow>> {
+  try {
+    const user = await ensureAuthenticated()
+    const supabase = await createClient()
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return { success: false, error: 'Unauthorized: You must be signed in to book.' }
+    // Database UNIQUE constraint handles duplication, 
+    // but we can be explicit here if needed.
+    const { data: booking, error: dbError } = await supabase
+      .from('bookings')
+      .insert({
+        ...data,
+        user_id: user.id,
+        idempotency_key: idempotencyKey as any // Casting as any since types might not be updated yet
+      })
+      .select()
+      .single()
+
+    if (dbError) {
+      if (dbError.code === '23505') { // Postgres error for unique violation
+        return { success: false, error: 'Request already processed.' }
+      }
+      console.error('Booking DB Error:', dbError)
+      return { success: false, error: 'System Error: Could not save your booking.' }
+    }
+
+    return { success: true, data: booking }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Authentication error' }
   }
-
-  const { data: booking, error: dbError } = await supabase
-    .from('bookings')
-    .insert({
-      ...data,
-      user_id: user.id
-    })
-    .select()
-    .single()
-
-  if (dbError) {
-    console.error('Booking DB Error:', dbError)
-    return { success: false, error: 'System Error: Could not save your booking.' }
-  }
-
-  // revalidatePath('/dashboard') 
-  return { success: true, data: booking }
 }
 
 /**
  * Job: Retrieve user's booking history (Passenger).
  */
 export async function getUserBookings(): Promise<ActionResponse<BookingRow[]>> {
-  const supabase = await createClient()
+  try {
+    const user = await ensureAuthenticated()
+    const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Unauthorized' }
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
 
-  const { data: bookings, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-
-  if (error) return { success: false, error: 'Could not fetch bookings.' }
-
-  return { success: true, data: bookings }
+    if (error) return { success: false, error: 'Could not fetch bookings.' }
+    return { success: true, data: bookings }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
 }
 
 /**
  * Job: Admin Only - Assign a Driver to a Booking.
- * Updates status to 'assigned'.
  */
-export async function assignDriver(bookingId: string, driverId: string, price?: number): Promise<ActionResponse<BookingRow>> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Unauthorized' }
+export async function assignDriver(bookingId: string, driverId: string): Promise<ActionResponse<BookingRow>> {
+  try {
+    await ensureRole('admin')
+    const supabase = await createClient()
 
-  // 1. Role Check
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if(profile?.role !== 'admin') {
-      return { success: false, error: 'Forbidden: Admin access only.' }
-  }
-
-  // 2. Assign Driver & Set Status
-  const { data, error } = await supabase
-    .from('bookings')
-    .update({ 
+    const { data, error } = await supabase
+      .from('bookings')
+      .update({
         driver_id: driverId,
-        status: 'assigned', // Workflow: Pending -> Assigned
-        price: price // Admin can set final agreed price here
-    })
-    .eq('id', bookingId)
-    .select()
-    .single()
+        status: 'assigned'
+      })
+      .eq('id', bookingId)
+      .select()
+      .single()
 
-  if (error) {
-     console.error('Assign Driver Error:', error)
-     return { success: false, error: 'Failed to assign driver.' }
+    if (error) {
+      console.error('Assign Driver Error:', error)
+      return { success: false, error: 'Failed to assign driver.' }
+    }
+
+    // Apollo Logistics: Auto-switch chauffeur to BUSY
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ driver_status: 'busy' })
+      .eq('id', driverId)
+
+    if (profileError) console.error('Auto-status busy failed:', profileError)
+
+    revalidatePath('/admin')
+    revalidatePath('/dashboard/driver')
+    return { success: true, data }
+  } catch (err: any) {
+    return { success: false, error: err.message }
   }
-
-  revalidatePath('/admin')
-  return { success: true, data }
 }
 
 /**
  * Job: Admin Only - Get List of Drivers for Dispatch Dropdown
  */
 export async function getDrivers(): Promise<ActionResponse<ProfileRow[]>> {
+  try {
+    await ensureRole('admin')
     const supabase = await createClient()
-    // Role check logic omitted for brevity, assuming UI hides this call mostly, RLS protects data.
-    
-    // We want all profiles where role = 'driver'
-    // Note: If you have RLS on profiles, you need a policy for Admin to see all profiles.
-    // Our migration added "Public profiles are viewable by everyone" for select, so this is safe.
-    
+
     const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'driver')
-        .order('full_name', { ascending: true })
+      .from('profiles')
+      .select('*')
+      .eq('role', 'driver')
+      .eq('driver_status', 'available')
+      .order('full_name', { ascending: true })
 
     if (error) return { success: false, error: error.message }
     return { success: true, data: data || [] }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
 }
-
 
 /**
  * Job: Admin Only - Update booking status (Cancel/Complete).
  */
 export async function updateBookingStatus(bookingId: string, status: 'cancelled' | 'completed'): Promise<ActionResponse<BookingRow>> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Unauthorized' }
+  try {
+    await ensureRole('admin')
+    const supabase = await createClient()
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if(profile?.role !== 'admin') {
-      return { success: false, error: 'Forbidden' }
+    const { data, error } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', bookingId)
+      .select()
+      .single()
+
+    if (error) return { success: false, error: 'Update Failed' }
+
+    if (status === 'completed' || status === 'cancelled') {
+      // Apollo Logistics: Revert chauffeur to AVAILABLE
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ driver_status: 'available' })
+        .eq('id', data.driver_id)
+
+      if (profileError) console.error('Auto-status available failed:', profileError)
+    }
+
+    revalidatePath('/admin')
+    revalidatePath('/dashboard/driver')
+    return { success: true, data }
+  } catch (err: any) {
+    return { success: false, error: err.message }
   }
-
-  const { data, error } = await supabase
-    .from('bookings')
-    .update({ status })
-    .eq('id', bookingId)
-    .select()
-    .single()
-
-  if (error) return { success: false, error: 'Update Failed' }
-
-  revalidatePath('/admin')
-  return { success: true, data }
 }
 
 /**
  * Job: Admin Only - Get All Bookings + Payload
- * We need to fetch Driver Name and Passenger Name too.
  */
 export async function getDispatchBoard(): Promise<ActionResponse<any[]>> {
+  try {
+    await ensureRole('admin')
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { success: false, error: 'Unauthorized' }
 
-    // Join profiles to get names.
-    // Supabase JS syntax for joins:
     const { data, error } = await supabase
-        .from('bookings')
-        .select(`
-            *,
-            passenger:user_id(full_name, email, phone),
-            driver:driver_id(full_name, phone)
-        `)
-        .order('created_at', { ascending: false })
-    
+      .from('bookings')
+      .select(`
+                *,
+                passenger:user_id(full_name, email, phone),
+                driver:driver_id(full_name, phone)
+            `)
+      .order('created_at', { ascending: false })
+
     if (error) return { success: false, error: error.message }
     return { success: true, data: data || [] }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
 }

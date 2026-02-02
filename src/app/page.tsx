@@ -1,29 +1,37 @@
-import Hero from "@/components/Hero/Hero";
-import CoreServices from "@/components/CoreServices/CoreServices";
-import HeritageSection from "@/components/HeritageSection/HeritageSection";
-import WhyChooseUs from "@/components/WhyChooseUs/WhyChooseUs";
-import Testimonials from "@/components/Testimonials/Testimonials";
-import Footer from "@/components/Footer/Footer";
-import ScrollReveal from "@/components/ScrollReveal/ScrollReveal";
-import styles from "./page.module.css";
+import { createClient } from '@/lib/supabase/server';
+import LandingView from '@/components/LandingView/LandingView';
+import PassengerDashboard from '@/components/Dashboard/PassengerDashboard';
+import AdminDashboard from '@/components/Dashboard/AdminDashboard';
+import DriverDashboard from '@/components/Dashboard/DriverDashboard';
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <Hero />
-      <ScrollReveal animation="fade-up" delay={200}>
-        <CoreServices />
-      </ScrollReveal>
-      <ScrollReveal animation="fade-up" delay={300}>
-        <HeritageSection />
-      </ScrollReveal>
-      <ScrollReveal animation="fade-up" delay={400}>
-        <WhyChooseUs />
-      </ScrollReveal>
-      <ScrollReveal animation="fade-up" delay={500}>
-        <Testimonials />
-      </ScrollReveal>
-      <Footer />
-    </main>
-  );
+/**
+ * Apollo Rule #1: What is this system supposed to do?
+ * Root Route (/) is the entry point. It must be smart.
+ */
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // If not logged in, show the Landing Mission (Marketing)
+  if (!user) {
+    return <LandingView />;
+  }
+
+  // If logged in, detect role and show appropriate Dashboard
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role === 'admin') {
+    return <AdminDashboard />;
+  }
+
+  if (profile?.role === 'driver') {
+    return <DriverDashboard />;
+  }
+
+  // Default to Passenger Dashboard for all other logged-in users
+  return <PassengerDashboard />;
 }

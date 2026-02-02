@@ -6,7 +6,8 @@
 
 .container {
     width: 100%;
-    max-width: 800px; /* Centered narrow form */
+    max-width: 800px;
+    /* Centered narrow form */
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -184,11 +185,6 @@
     margin-bottom: 12px;
 }
 
-.priceTag {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--primary-blue);
-}
 
 .textarea {
     min-height: 100px;
@@ -246,22 +242,27 @@
     transition: opacity var(--transition-fast);
 }
 
-.nextBtn:disabled, .submitBtn:disabled {
+.nextBtn:disabled,
+.submitBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
 @media (max-width: 600px) {
-    .grid, .vehicleGrid {
+
+    .grid,
+    .vehicleGrid {
         grid-template-columns: 1fr;
     }
-    
+
     .formContent {
         padding: 24px;
     }
 }
 
-.error input, .error select, .error textarea {
+.error input,
+.error select,
+.error textarea {
     border-color: #ff4d4f !important;
     background-color: #fff2f0;
 }

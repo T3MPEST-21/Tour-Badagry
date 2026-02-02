@@ -17,23 +17,23 @@ const CoreServices = () => {
             <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2" />
         </svg>
     ); // Replacing generic send/plane with a distinct plane if preferred, usually a simple plane shape is best.
-    
+
     // Better plane icon
     const planeIcon = (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-           <path d="M2 12h20 M13 12l5-8 M6 12l5-8 M9 16l4 8 M15 16l2 4 M6 12l-2 3 M22 12l-2 3" />
+            <path d="M2 12h20 M13 12l5-8 M6 12l5-8 M9 16l4 8 M15 16l2 4 M6 12l-2 3 M22 12l-2 3" />
             {/* Simplified plane shape for clarity if the above is too abstract */}
-           <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="none" stroke="none"/> {/* hidden filler */}
-           <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="currentColor" stroke="none"/>
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="none" stroke="none" /> {/* hidden filler */}
+            <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="currentColor" stroke="none" />
         </svg>
     );
 
     // Let's use clean stroke icons to match the style
     const planeStrokeIcon = (
-         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 12L22 18L2 18L8 12M2 18L10 2L14 10" opacity="0"/> {/* reset path */}
-            <path d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z" fill="currentColor" stroke="none"/>
-         </svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 12L22 18L2 18L8 12M2 18L10 2L14 10" opacity="0" /> {/* reset path */}
+            <path d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z" fill="currentColor" stroke="none" />
+        </svg>
     );
 
     const heritageIcon = (
@@ -57,33 +57,33 @@ const CoreServices = () => {
                             exploration solutions.
                         </h2>
                         <p className={styles.description}>
-                            We combine local knowledge with modern fleet standards to ensure 
+                            We combine local knowledge with modern fleet standards to ensure
                             your journey is comfortable, safe, and rich in discovery.
                         </p>
                     </div>
                 </div>
 
                 <div className={styles.grid}>
-                    <ServiceCard 
+                    <ServiceCard
                         imageSrc="/taxi-services.jpeg"
                         title="Taxi Services"
                         description="Professional, air-conditioned rides within Badagry, Seme, Agbara, and Lagos metropolis. Available 24/7 for your convenience."
-                        linkText="Learn more"
-                        linkUrl="/services#taxi"
+                        linkText="Book now"
+                        linkUrl="/booking?type=taxi"
                     />
-                    <ServiceCard 
+                    <ServiceCard
                         imageSrc="/Airport-transfers.jpeg"
                         title="Airport Transfers"
                         description="Punctual and comfortable pickups and drop-offs from MMIA/MM2. We track your flight to ensure we're there when you land."
                         linkText="Book transfer"
                         linkUrl="/booking?type=airport"
                     />
-                    <ServiceCard 
+                    <ServiceCard
                         imageSrc="/heritage-tours.webp"
                         title="Heritage Tours"
                         description="Curated guided visits to historical landmarks including the First Storey Building and the Point of No Return."
                         linkText="Explore tours"
-                        linkUrl="/tours"
+                        linkUrl="/booking?type=tour"
                     />
                 </div>
             </div>

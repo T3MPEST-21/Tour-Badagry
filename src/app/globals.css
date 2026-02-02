@@ -1,47 +1,44 @@
 :root {
-  /* Brand Colors */
+  /* Shared Variables */
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --whatsapp-green: #25d366;
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --header-height: 80px;
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --section-padding: 80px 20px;
+  --container-max-width: 1240px;
+
+  /* Default (Light) Theme */
   --primary-blue: #014781;
   --primary-blue-hover: #013663;
   --secondary-gold: #d4af37;
   --secondary-gold-hover: #b89628;
-  --accent-gold-light: #f4e8c1;
-  --whatsapp-green: #25d366;
-
-  /* Neutrals */
-  --white: #ffffff;
-  --off-white: #f8f9fa;
-  --gray-light: #e9ecef;
-  --gray-medium: #6c757d;
-  --gray-dark: #343a40;
-  --black: #1a1a1a;
-
-  /* Functional Colors */
-  --background: var(--white);
-  --foreground: var(--black);
-  --input-bg: var(--off-white);
-  --border-color: var(--gray-light);
-
-  /* Typography */
-  --font-main:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-
-  /* Layout & Spacing */
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  --section-padding: 80px 20px;
-  --container-max-width: 1240px;
-  --header-height: 80px;
-
-  /* Transitions */
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
-
-  /* Shadows */
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card-bg: #f8f9fa;
+  --border-color: #e9ecef;
+  --input-bg: #f8f9fa;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --primary-blue: #0077cc;
+  --primary-blue-hover: #0099ff;
+  --secondary-gold: #e2c044;
+  --secondary-gold-hover: #f1d36e;
+  --background: #0a0e14;
+  --foreground: #e1e1e1;
+  --card-bg: #161b22;
+  --border-color: #30363d;
+  --input-bg: #0d1117;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 }
 
 html,
@@ -57,6 +54,7 @@ body {
   font-family: var(--font-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 * {
