@@ -11,6 +11,8 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [user, setUser] = useState<any>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -21,15 +23,26 @@ const Navbar = () => {
     document.documentElement.setAttribute('data-theme', initialTheme);
 
     // Check Auth Status
+    // Check Auth Status (Validation)
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+      // getUser() validates the token against the server. 
+      // getSession() just checks local storage. 
+      // We use getUser to prevent 'Zombie Sessions'.
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        setUser(null);
+      } else {
+        setUser(user);
+      }
     };
     checkUser();
 
     // Listen for Auth Changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (_event === 'SIGNED_OUT') {
+        setLoggingOut(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -43,6 +56,34 @@ const Navbar = () => {
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleLogoutClick = () => {
+    setIsMenuOpen(false);
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutConfirm(false);
+    setLoggingOut(true);
+
+    // 1. Force UI update immediately
+    setUser(null);
+
+    // 2. Clear Client-Side Session (LocalStorage)
+    await supabase.auth.signOut();
+
+    // Safety timeout: if server action redirect fails
+    setTimeout(() => {
+      if (window.location.pathname === '/') window.location.reload();
+    }, 5000);
+
+    // 3. Clear Server-Side Cookies & Redirect
+    await signOut();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
+  };
 
   return (
     <nav className={styles.navbar}>
@@ -65,21 +106,25 @@ const Navbar = () => {
         <ul className={`${styles.navLinks} ${isMenuOpen ? styles.active : ''}`}>
           <li><Link href="/" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Home</Link></li>
           {user && (
-            <li><Link href="/" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Dashboard</Link></li>
+            <li><Link href="/dashboard/passenger" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Dashboard</Link></li>
           )}
-          {user ? (
-            <li>
+
+          <li>
+            {user ? (
               <button
-                onClick={() => { signOut(); setIsMenuOpen(false); }}
+                onClick={handleLogoutClick}
                 className={styles.navLink}
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                disabled={loggingOut}
               >
                 Logout
               </button>
-            </li>
-          ) : (
-            <li><Link href="/login" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Login</Link></li>
-          )}
+            ) : (
+              <Link href="/login" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
+                Login
+              </Link>
+            )}
+          </li>
 
           <li className={styles.mobileOnly}>
             {!user && (
@@ -113,6 +158,33 @@ const Navbar = () => {
           </button>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Disconnect Uplink?</h3>
+            <p>Are you sure you want to log out of the Mission Control Center?</p>
+            <div className={styles.modalActions}>
+              <button className={styles.cancelBtn} onClick={cancelLogout}>Cancel</button>
+              <button className={styles.confirmBtn} onClick={confirmLogout}>Disconnect</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Screen Blocking Overlay */}
+      {loggingOut && (
+        <div className={styles.blockingOverlay}>
+          <div className={styles.spinnerWrapper}>
+            <div className={styles.spinnerCore}></div>
+            <div className={styles.spinnerText}>
+              <span>Terminating Session...</span>
+              <small>Securing connection data.</small>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

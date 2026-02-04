@@ -10,6 +10,7 @@
   z-index: 1000;
   box-shadow: var(--shadow-sm);
   transition: background-color var(--transition-normal), border-color var(--transition-normal);
+  backdrop-filter: var(--backdrop-blur);
 }
 
 .container {
@@ -48,7 +49,7 @@
 .logoText {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--primary-blue);
+  color: var(--primary-neon);
   letter-spacing: -0.02em;
 }
 
@@ -68,7 +69,7 @@
 }
 
 .navLink:hover {
-  color: var(--primary-blue);
+  color: var(--primary-neon);
   opacity: 1;
 }
 
@@ -80,7 +81,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background-color: var(--secondary-gold);
+  background-color: var(--secondary-amber);
   transition: width var(--transition-fast);
 }
 
@@ -88,23 +89,42 @@
   width: 100%;
 }
 
+/* Auth Spinner */
+.spinnerCore {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--primary-neon);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
 .bookBtn {
-  background: var(--primary-blue);
-  color: #ffffff;
+  background: var(--primary-neon);
+  color: #000;
   padding: 10px 24px;
   border-radius: var(--border-radius-sm);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition: all var(--transition-fast);
   border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--shadow-neon);
 }
 
 .bookBtn:hover {
-  background: var(--primary-blue-hover);
+  background: #38bdf8;
   transform: translateY(-1px);
+  box-shadow: 0 0 15px var(--primary-glow);
 }
 
 .hamburger {
@@ -146,7 +166,7 @@
     /* header height */
     left: 0;
     flex-direction: column;
-    background: var(--white);
+    background: var(--background);
     width: 100%;
     height: calc(100vh - 80px);
     /* full height minus header */
@@ -184,13 +204,13 @@
 
   .bookBtnMobile {
     width: 100%;
-    background: var(--primary-blue);
-    color: #ffffff;
+    background: var(--primary-neon);
+    color: #000;
     padding: 15px;
     text-align: center;
     border-radius: var(--border-radius-md);
     display: block;
-    font-weight: 600;
+    font-weight: 700;
   }
 }
 
@@ -201,7 +221,7 @@
 }
 
 .themeToggle {
-  background: var(--card-bg);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   color: var(--foreground);
   width: 40px;
@@ -217,13 +237,152 @@
 }
 
 .themeToggle:hover {
-  background: var(--border-color);
+  background: rgba(255, 255, 255, 0.1);
   transform: rotate(15deg);
+  border-color: var(--primary-neon);
 }
 
 /* Ensure mobile only items are hidden on desktop */
 @media (min-width: 901px) {
   .mobileOnly {
     display: none;
+  }
+}
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContent {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 30px;
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  animation: popIn 0.3s ease;
+}
+
+.modalContent h3 {
+  color: var(--foreground);
+  margin-bottom: 12px;
+}
+
+.modalContent p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirmBtn {
+  background: var(--danger-red);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.confirmBtn:hover {
+  transform: scale(1.05);
+}
+
+.cancelBtn {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancelBtn:hover {
+  background: var(--border-color);
+}
+
+
+/* Blocking Overlay */
+.blockingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.9);
+  /* Deep opaque blue */
+  backdrop-filter: blur(15px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.spinnerWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.spinnerCore {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--primary-neon);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinnerText {
+  text-align: center;
+  color: var(--foreground);
+}
+
+.spinnerText span {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+}
+
+.spinnerText small {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }

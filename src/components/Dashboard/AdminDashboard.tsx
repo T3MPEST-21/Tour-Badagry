@@ -5,6 +5,7 @@ import { getDispatchBoard, getDrivers, assignDriver, updateBookingStatus, Action
 import styles from './Dashboard.module.css';
 import { createClient } from '@/lib/supabase/client';
 import LiveMap from '../LiveMap/LiveMap';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 
 const AdminDashboard = () => {
     const [bookings, setBookings] = useState<any[]>([]);
@@ -24,6 +25,7 @@ const AdminDashboard = () => {
     useEffect(() => {
         refreshData();
 
+        // Realtime Sync via Sockets
         const channel = supabase
             .channel('admin-dispatch-sync')
             .on(
@@ -32,6 +34,12 @@ const AdminDashboard = () => {
                 () => refreshData()
             )
             .subscribe();
+
+        // Apollo Heartbeat: Poll every 15s to ensure data consistency
+        // This acts as a fallback for socket packet loss.
+        const heartbeat = setInterval(() => {
+            refreshData();
+        }, 15000);
 
         // Listen for Fleet Live GPS via Supabase Presence
         const locationChannel = supabase.channel('global-positioning');
@@ -47,6 +55,7 @@ const AdminDashboard = () => {
         return () => {
             supabase.removeChannel(channel);
             supabase.removeChannel(locationChannel);
+            clearInterval(heartbeat);
         };
     }, []);
 
@@ -62,7 +71,7 @@ const AdminDashboard = () => {
         if (res.success) refreshData();
     };
 
-    if (loading) return <div className={styles.loading}>Booting Dispatch Systems...</div>;
+    if (loading) return <div className={styles.loading}> <LoadingSpinner /></div>;
 
     return (
         <div className={styles.dashboard}>

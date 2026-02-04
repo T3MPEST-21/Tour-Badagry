@@ -201,6 +201,24 @@ const BookingForm = () => {
                                             }}
                                         />
                                     </div>
+                                    <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--primary-blue)', fontWeight: 'bold' }}>
+                                            <input
+                                                type="checkbox"
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        const now = new Date();
+                                                        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                                                        const dateStr = now.toISOString().split('T')[0];
+                                                        setFormData(prev => ({ ...prev, date: dateStr, time: timeStr }));
+                                                    } else {
+                                                        setFormData(prev => ({ ...prev, date: '', time: '' }));
+                                                    }
+                                                }}
+                                            />
+                                            🚀 Ride Now (Immediate Deployment)
+                                        </label>
+                                    </div>
                                     <div className={`${styles.inputGroup} ${errors.date ? styles.error : ''}`}>
                                         <label>Preferred Date</label>
                                         <input

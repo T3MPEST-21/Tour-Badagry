@@ -12,7 +12,7 @@ const LiveMapCore = dynamic<LiveMapProps>(() => import('./LiveMapCore'), {
             <p style={{ color: 'var(--primary-blue)', letterSpacing: '2px', fontSize: '0.8rem' }}>
                 INITIALIZING NAVIGATION...
             </p>
-        </div>
+        </div>  
     )
 });
 

@@ -4,52 +4,77 @@
     align-items: center;
     justify-content: center;
     gap: 16px;
-    padding: 20px;
+    height: 100%;
+    min-height: 200px;
 }
 
-.spinner {
-    animation: rotate 2s linear infinite;
-    width: 50px;
-    height: 50px;
+.container.minimal {
+    min-height: auto;
+    padding: 0;
+}
+
+.svg {
+    color: var(--primary-neon);
+    filter: drop-shadow(0 0 8px var(--primary-glow));
+    overflow: visible;
+}
+
+/* Light Mode Override */
+[data-theme='light'] .svg {
+    color: var(--primary-blue);
+    filter: none;
 }
 
 .path {
-    stroke: var(--primary-blue);
-    stroke-linecap: round;
-    animation: dash 1.5s ease-in-out infinite;
-    filter: drop-shadow(0 0 5px rgba(1, 71, 129, 0.4));
+    fill: none;
+    /* stroke-dasharray calculated roughly:
+       T-Bar length ~ 70
+       B-Complex length ~ 150
+    */
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: draw 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.pathT {
+    /* T bar draws first */
+    animation-delay: 0s;
+}
+
+.pathB {
+    /* B spine draws slightly after */
+    animation-delay: 0.3s;
 }
 
 .text {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 2px;
-    color: var(--primary-blue);
+    color: var(--text-muted);
     text-transform: uppercase;
     animation: pulse 2s ease-in-out infinite;
-    opacity: 0.8;
 }
 
-@keyframes rotate {
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes dash {
+@keyframes draw {
     0% {
-        stroke-dasharray: 1, 150;
-        stroke-dashoffset: 0;
+        stroke-dashoffset: 200;
+        /* Hidden */
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
     }
 
     50% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -35;
+        stroke-dashoffset: 0;
+        /* Fully Drawn */
     }
 
     100% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -124;
+        stroke-dashoffset: -200;
+        /* Disappear in direction of travel */
+        opacity: 0;
     }
 }
 
@@ -57,10 +82,10 @@
 
     0%,
     100% {
-        opacity: 0.4;
+        opacity: 0.5;
     }
 
     50% {
-        opacity: 0.9;
+        opacity: 1;
     }
 }

@@ -187,8 +187,68 @@ export async function getDispatchBoard(): Promise<ActionResponse<any[]>> {
             `)
       .order('created_at', { ascending: false })
 
-    if (error) return { success: false, error: error.message }
     return { success: true, data: data || [] }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Job: Passenger Only - Cancel their OWN booking.
+ * Logic: Can only cancel if status is 'pending' or 'assigned'.
+ * If a driver was assigned, release them.
+ */
+export async function cancelMyBooking(bookingId: string): Promise<ActionResponse<BookingRow>> {
+  try {
+    const user = await ensureAuthenticated()
+    const supabase = await createClient()
+
+    // 1. Get current booking to check status and driver
+    const { data: booking, error: fetchError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('id', bookingId)
+      .eq('user_id', user.id) // Security: Must own the booking
+      .single()
+
+    if (fetchError || !booking) return { success: false, error: 'Booking not found.' }
+
+    if (['completed', 'cancelled', 'en_route'].includes(booking.status)) {
+      return { success: false, error: 'Cannot cancel a trip already in progress or completed.' }
+    }
+
+    // 2. Update status to cancelled
+    const { data: updatedBookings, error: updateError } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', bookingId)
+      .select()
+
+    if (updateError) {
+      console.error('Cancellation Failed DB Error:', updateError);
+      return { success: false, error: updateError.message }
+    }
+
+    if (!updatedBookings || updatedBookings.length === 0) {
+      return { success: false, error: 'Permission Denied: Please enable UPDATE permissions for Users in Supabase RLS policies.' }
+    }
+
+    const updatedBooking = updatedBookings[0];
+
+    // 3. Apollo Logistics: Release Chauffeur if assigned
+    if (booking.driver_id) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ driver_status: 'available' })
+        .eq('id', booking.driver_id)
+
+      if (profileError) console.error('Release driver failed:', profileError)
+    }
+
+    revalidatePath('/dashboard/passenger')
+    revalidatePath('/admin')
+    return { success: true, data: updatedBooking }
+
   } catch (err: any) {
     return { success: false, error: err.message }
   }

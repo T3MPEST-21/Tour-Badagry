@@ -1,44 +1,82 @@
 :root {
-  /* Shared Variables */
-  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --whatsapp-green: #25d366;
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  --header-height: 80px;
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
-  --section-padding: 80px 20px;
-  --container-max-width: 1240px;
+  /* =========================================
+     APOLLO GLASS THEME (Default / Dark)
+     ========================================= */
 
-  /* Default (Light) Theme */
+  /* Core Tokens */
+  --primary-neon: #0ea5e9;
+  /* Cyan Neon */
+  --primary-glow: rgba(14, 165, 233, 0.5);
+  --secondary-amber: #f59e0b;
+  /* Amber Neon */
+  --secondary-glow: rgba(245, 158, 11, 0.5);
+  --success-green: #10b981;
+  --danger-red: #ef4444;
+
+  /* Surfaces */
+  --background: #0f172a;
+  /* Deep Space Blue */
+  --glass-surface: rgba(30, 41, 59, 0.7);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+
+  /* Text */
+  --foreground: #f8fafc;
+  --text-muted: #94a3b8;
+
+  /* Layout & Effects */
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --header-height: 80px;
+  --container-max-width: 1240px;
+  --backdrop-blur: blur(12px);
+  --shadow-neon: 0 0 10px var(--primary-glow);
+  --border-radius-lg: 16px;
+  --border-radius-md: 8px;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* =========================================
+     LEGACY COMPATIBILITY (Mapping Old -> New)
+     ========================================= */
+  --primary-blue: var(--primary-neon);
+  --primary-blue-hover: #0284c7;
+  --secondary-gold: var(--secondary-amber);
+  --secondary-gold-hover: #d97706;
+  --card-bg: rgba(30, 41, 59, 0.5);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(15, 23, 42, 0.6);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* =========================================
+   LIGHT THEME (Day Operations)
+   ========================================= */
+[data-theme='light'] {
+  /* Reverting to Classic Corporate Colors for Light Mode */
+  --primary-neon: #014781;
+  /* Classic Blue */
+  --primary-glow: rgba(1, 71, 129, 0.2);
+  --secondary-amber: #d4af37;
+  /* Classic Gold */
+
+  --background: #ffffff;
+  --glass-surface: rgba(255, 255, 255, 0.9);
+  --glass-border: 1px solid #e2e8f0;
+  --glass-highlight: rgba(0, 0, 0, 0.02);
+
+  --foreground: #0f172a;
+  --text-muted: #64748b;
+
+  /* Legacy Mapping for Light Mode */
   --primary-blue: #014781;
   --primary-blue-hover: #013663;
   --secondary-gold: #d4af37;
   --secondary-gold-hover: #b89628;
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card-bg: #f8f9fa;
-  --border-color: #e9ecef;
-  --input-bg: #f8f9fa;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-[data-theme='dark'] {
-  --primary-blue: #0077cc;
-  --primary-blue-hover: #0099ff;
-  --secondary-gold: #e2c044;
-  --secondary-gold-hover: #f1d36e;
-  --background: #0a0e14;
-  --foreground: #e1e1e1;
-  --card-bg: #161b22;
-  --border-color: #30363d;
-  --input-bg: #0d1117;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --card-bg: #f8fafc;
+  --border-color: #e2e8f0;
+  --input-bg: #f1f5f9;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 html,
