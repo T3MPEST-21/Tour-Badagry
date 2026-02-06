@@ -76,72 +76,101 @@ const AdminDashboard = () => {
     return (
         <div className={styles.dashboard}>
             <header className={styles.header}>
-                <h1>Dispatch Board</h1>
-                <div className={styles.actions}>
-                    <button
-                        onClick={() => setShowMap(!showMap)}
-                        className={styles.refreshBtn}
-                        style={{ marginRight: '10px', background: showMap ? 'var(--primary-blue)' : 'transparent' }}
-                    >
-                        {showMap ? '📊 Hide Map' : '🗺️ Fleet View'}
-                    </button>
-                    <button onClick={refreshData} className={styles.refreshBtn}>🔄 Sync</button>
+                <div>
+                    <h1>Tour Badagry Admin</h1>
+                    <p style={{ color: 'var(--text-muted)', marginTop: '4px' }}>Fleet Command</p>
+                </div>
+                <div>
+                    <button className={styles.refreshBtn} onClick={refreshData}>🔔</button>
+                    {/* Map Toggle logic can be added later if needed */}
                 </div>
             </header>
 
-            {showMap && (
-                <div style={{ marginBottom: '30px' }}>
-                    <LiveMap drivers={trackedDrivers} />
+            {/* 1. Admin Stats Row */}
+            <div className={styles.adminStats}>
+                <div className={styles.statCard} style={{ background: '#1e293b' }}>
+                    <span className={styles.statLabel}>ACTIVE DRIVERS</span>
+                    <span className={styles.statValue} style={{ color: '#fff' }}>{drivers.filter(d => d.driver_status !== 'offline').length}</span>
+                    <span className={styles.statTrend} style={{ color: '#22c55e' }}>+5%</span>
                 </div>
-            )}
+                <div className={styles.statCard} style={{ background: '#1e293b' }}>
+                    <span className={styles.statLabel}>PENDING</span>
+                    <span className={styles.statValue} style={{ color: '#fff' }}>{bookings.filter(b => b.status === 'pending').length}</span>
+                    <span className={styles.statTrend} style={{ color: '#f43f5e' }}>-2%</span>
+                </div>
+                <div className={styles.statCard} style={{ background: '#1e293b' }}>
+                    <span className={styles.statLabel}>REVENUE</span>
+                    <span className={styles.statValue} style={{ color: '#fff' }}>₦150k</span>
+                    <span className={styles.statTrend} style={{ color: '#22c55e' }}>+10%</span>
+                </div>
+            </div>
 
-            <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Status/Driver</th>
-                            <th>Trip</th>
-                            <th>Passenger</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {bookings.map((booking) => (
-                            <tr key={booking.id}>
-                                <td>
-                                    <div className={`${styles.badge} ${styles[booking.status]}`}>
-                                        {booking.status.replace('_', ' ').toUpperCase()}
-                                    </div>
-                                    {booking.driver && <div className={styles.driverName}>👮 {booking.driver.full_name}</div>}
-                                </td>
-                                <td>
-                                    <strong>{booking.service_type.toUpperCase()}</strong>
-                                    <div className={styles.route}>{booking.pickup_details.pickup} ➔ {booking.pickup_details.destination}</div>
-                                </td>
-                                <td>
-                                    <div>{booking.passenger?.full_name || 'Guest'}</div>
-                                    <div className={styles.subText}>{booking.passenger?.phone}</div>
-                                </td>
-                                <td>
-                                    {booking.status === 'pending' && (
-                                        <form action={(fd) => handleAssign(booking.id, fd)} className={styles.assignForm}>
-                                            <select name="driverId" required className={styles.select}>
-                                                <option value="">Select Driver</option>
-                                                {drivers.map(d => (
-                                                    <option key={d.id} value={d.id}>{d.full_name}</option>
-                                                ))}
-                                            </select>
-                                            <button className={styles.btnAction}>Assign</button>
-                                        </form>
-                                    )}
-                                    {booking.status === 'driver_accepted' && (
-                                        <button onClick={() => handleStatusUpdate(booking.id, 'completed')} className={styles.btnComplete}>Complete</button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            {/* 2. Quick Actions */}
+            <h3 style={{ fontSize: '1rem', marginBottom: '16px', color: 'var(--white)' }}>Quick Actions</h3>
+            <div className={styles.adminQuickActions}>
+                <div className={styles.adminActionCard} onClick={() => alert('Assign Driver Flow')}>
+                    <div style={{ fontSize: '2rem', color: '#38bdf8' }}>👤+</div>
+                    <span style={{ fontWeight: 600 }}>Assign Driver</span>
+                </div>
+                <div className={styles.adminActionCard} onClick={() => alert('Add Tour Flow')}>
+                    <div style={{ fontSize: '2rem', color: '#38bdf8' }}>🗺️</div>
+                    <span style={{ fontWeight: 600 }}>Add Tour</span>
+                </div>
+                <div className={styles.adminActionCard} onClick={() => alert('Broadcast Message')}>
+                    <div style={{ fontSize: '2rem', color: '#38bdf8' }}>📢</div>
+                    <span style={{ fontWeight: 600 }}>Broadcast</span>
+                </div>
+            </div>
+
+            {/* 3. Fleet Status */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Fleet Status</h3>
+                <span style={{ color: '#38bdf8', fontSize: '0.9rem', cursor: 'pointer' }}>View All</span>
+            </div>
+
+            <div className={styles.fleetList}>
+                {drivers.slice(0, 3).map(driver => (
+                    <div key={driver.id} className={styles.fleetCard}>
+                        <div className={styles.carIconBox}>🚘</div>
+                        <div className={styles.fleetInfo}>
+                            <h4>{driver.full_name || 'Unknown Driver'}</h4>
+                            <p>{driver.driver_status === 'busy' ? 'On Tour: Point of No Return' : 'Standby - Badagry Marina'}</p>
+                        </div>
+                        <span className={`${styles.fleetBadge} ${driver.driver_status === 'busy' ? styles.active : styles.available}`}>
+                            {driver.driver_status === 'busy' ? 'ACTIVE' : 'AVAILABLE'}
+                        </span>
+                    </div>
+                ))}
+                {drivers.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No drivers found.</p>}
+            </div>
+
+            {/* 4. Recent Bookings List */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', marginTop: '30px' }}>
+                <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Recent Bookings</h3>
+                <span style={{ color: '#38bdf8', fontSize: '0.9rem', cursor: 'pointer' }}>Today</span>
+            </div>
+
+            <div style={{ marginBottom: '80px' }}>
+                {bookings.slice(0, 5).map(booking => (
+                    <div key={booking.id} className={styles.recentBookingRow}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div className={styles.userAvatar}>
+                                {booking.passenger?.full_name?.charAt(0) || 'U'}
+                            </div>
+                            <div>
+                                <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem' }}>{booking.passenger?.full_name || 'Guest User'}</h4>
+                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.service_type}</p>
+                            </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <span className={`${styles.status} ${styles[booking.status]}`} style={{ display: 'inline-block', marginBottom: '4px', fontSize: '0.7rem' }}>
+                                {booking.status.toUpperCase()}
+                            </span>
+                            <div style={{ fontWeight: 700 }}>₦{['tour', 'airport'].includes(booking.service_type) ? '12,500' : '5,500'}</div>
+                        </div>
+                    </div>
+                ))}
+                {bookings.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No bookings today.</p>}
             </div>
         </div>
     );

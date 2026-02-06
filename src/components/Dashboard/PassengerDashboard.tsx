@@ -109,9 +109,51 @@ const PassengerDashboard = () => {
     return (
         <div className={styles.dashboard}>
             <header className={styles.header}>
-                <h1>My Journeys</h1>
-                <Link href="/booking" className={styles.bookBtn}>Book New Ride</Link>
+                <div>
+                    <h1>Welcome Back, Travelers</h1>
+                    <p style={{ color: 'var(--text-muted)', marginTop: '5px' }}>Where would you like to go today?</p>
+                </div>
             </header>
+
+            {/* Search Bar (Floating Glow) */}
+            <div className={styles.searchContainer}>
+                <div className={styles.searchInner}>
+                    <span className={styles.searchIcon}>🔍</span>
+                    <input type="text" placeholder="Where to?" className={styles.searchInput} disabled />
+                    <button className={styles.mapBtn}>🗺️</button>
+                </div>
+            </div>
+
+            <h3 style={{ fontSize: '1rem', marginBottom: '16px', color: 'var(--white)' }}>Quick Actions</h3>
+            <div style={{ position: 'relative' }}>
+                <div className={styles.quickActions}>
+                    <Link href="/booking" className={styles.actionBtn}>
+                        <div className={styles.actionIcon}>🚖</div>
+                        <span>Book Taxi</span>
+                    </Link>
+                    <Link href="/booking?type=tour" className={styles.actionBtn}>
+                        <div className={styles.actionIcon}>🗺️</div>
+                        <span>Plan Tour</span>
+                    </Link>
+                    <Link href="/booking?type=airport" className={styles.actionBtn}>
+                        <div className={styles.actionIcon}>✈️</div>
+                        <span>Airport</span>
+                    </Link>
+                    <Link href="/booking?type=airport" className={styles.actionBtn}>
+                        <div className={styles.actionIcon}>💬</div>
+                        <span>Support</span>
+                    </Link>
+                    {/* Fake items to demonstrate scroll */}
+                    <div className={styles.actionBtn} style={{ opacity: 0.5 }}>
+                        <div className={styles.actionIcon}>🍱</div>
+                        <span>Food</span>
+                    </div>
+                </div>
+                {/* Scroll Hint Overlay */}
+                <div className={styles.scrollHint}>
+                    <span className={styles.chevron}>›</span>
+                </div>
+            </div>
 
             {debriefBooking && (
                 <MissionDebrief
@@ -129,61 +171,98 @@ const PassengerDashboard = () => {
                 </div>
             )}
 
-            {bookings.length === 0 ? (
-                <div className={styles.emptyState}>
-                    <p>No active missions found. Ready for your first trip?</p>
-                </div>
-            ) : (
-                <div className={styles.grid}>
-                    {bookings.map((booking) => (
-                        <div key={booking.id} className={styles.card}>
-                            <div className={styles.cardHeader}>
-                                <span className={`${styles.status} ${styles[booking.status]}`}>
-                                    {booking.status.replace('_', ' ').toUpperCase()}
-                                </span>
-                                <span className={styles.date}>{new Date(booking.created_at).toLocaleDateString()}</span>
-                            </div>
-                            <div className={styles.cardBody}>
-                                <h3>{booking.service_type.toUpperCase()}</h3>
-                                <p>📍 {booking.pickup_details.pickup}</p>
-                                <p>🏁 {booking.pickup_details.destination}</p>
-                            </div>
+            {/* Logic Separation */}
+            {(() => {
+                const upcomingTrip = bookings.find(b => ['pending', 'assigned', 'driver_accepted', 'en_route'].includes(b.status));
+                const pastTrips = bookings.filter(b => !['pending', 'assigned', 'driver_accepted', 'en_route'].includes(b.status)).slice(0, 5);
+                // Mock Saved Places (Empty for demo as per request)
+                const savedPlaces: any[] = [];
 
-                            <div className={styles.cardFooter} style={{ marginTop: '15px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                                {['pending', 'assigned', 'driver_accepted'].includes(booking.status) && (
-                                    <button
-                                        onClick={() => handleCancel(booking.id)}
-                                        className={styles.linkBtn}
-                                        style={{ color: '#ff4d4f', fontSize: '0.85rem', background: 'none', border: 'none', padding: 0, textDecoration: 'underline', cursor: 'pointer' }}
-                                    >
-                                        🛑 Cancel Request
-                                    </button>
-                                )}
+                return (
+                    <>
+                        {/* Featured Upcoming Trip */}
+                        {upcomingTrip && (
+                            <div className={styles.featuredCard}>
+                                <span className={styles.featuredTag}>Upcoming Mission</span>
+                                <h2 className={styles.featuredTitle}>{upcomingTrip.service_type}</h2>
+                                <div className={styles.featuredMeta}>
+                                    <span>🗓️ {new Date(upcomingTrip.created_at).toLocaleDateString()}</span>
+                                    <span>•</span>
+                                    <span>📍 {upcomingTrip.pickup_details.pickup.split(',')[0]}</span>
+                                </div>
+                                <button className={styles.featuredBtn} onClick={() => alert('Viewing Mission Details...')}>
+                                    View Mission Details
+                                </button>
 
-                                {['assigned', 'driver_accepted', 'en_route'].includes(booking.status) && booking.share_token && (
-                                    <button
-                                        onClick={() => handleShare(booking.share_token)}
-                                        className={styles.linkBtn}
-                                        style={{ color: 'var(--primary-blue)', fontSize: '0.85rem', background: 'none', border: 'none', padding: 0, textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold' }}
-                                    >
-                                        📡 Share Uplink
-                                    </button>
-                                )}
-
-                                {booking.status === 'completed' && (
-                                    <button
-                                        onClick={() => handleDebrief(booking)}
-                                        className={styles.linkBtn}
-                                        style={{ color: '#fbbf24', fontSize: '0.9rem', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 'bold' }}
-                                    >
-                                        ⭐ Mission Debrief
-                                    </button>
+                                {/* Quick visual indicator if map is tracking */}
+                                {['assigned', 'driver_accepted', 'en_route'].includes(upcomingTrip.status) && (
+                                    <div style={{ marginTop: '15px', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div style={{ width: '10px', height: '10px', background: '#22c55e', borderRadius: '50%', boxShadow: '0 0 5px #22c55e' }}></div>
+                                        <span style={{ fontSize: '0.9rem' }}>Live Tracking Active</span>
+                                    </div>
                                 )}
                             </div>
+                        )}
+
+                        {/* Recent Trips Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h2 style={{ fontSize: '1.2rem', margin: 0 }}>Recent Trips</h2>
+                            <button style={{ background: 'none', border: 'none', color: 'var(--primary-neon)', cursor: 'pointer' }}>See all</button>
                         </div>
-                    ))}
-                </div>
-            )}
+
+                        {/* Recent Trips List */}
+                        <div className={styles.tripList}>
+                            {pastTrips.length === 0 && !upcomingTrip ? (
+                                <div className={styles.emptyState}>
+                                    <p>Your journey log is empty. Start your first adventure.</p>
+                                </div>
+                            ) : (
+                                pastTrips.map(trip => (
+                                    <div key={trip.id} className={styles.tripRow}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <div className={styles.tripIcon}>🕒</div>
+                                            <div className={styles.tripInfo}>
+                                                <h4>{trip.pickup_details.destination.split(',')[0]}</h4>
+                                                <p>{new Date(trip.created_at).toLocaleDateString()} • {trip.service_type}</p>
+                                            </div>
+                                        </div>
+                                        <div className={styles.tripStatus}>
+                                            {/* Mock price from trip data or fixed */}
+                                            <span className={styles.tripPrice}>₦{Math.floor(Math.random() * 5000) + 2000}</span>
+                                            <span className={styles.tripState}>{trip.status.replace('driver_accepted', 'Active').toUpperCase()}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Saved Places */}
+                        <div className={styles.savedSection}>
+                            <h3 style={{ fontSize: '1.2rem', marginBottom: '16px', color: 'var(--white)' }}>Saved Places</h3>
+
+                            {savedPlaces.length > 0 ? (
+                                <div className={styles.savedGrid}>
+                                    {savedPlaces.map((place, i) => (
+                                        <div key={i} className={styles.savedCard}>
+                                            <div className={styles.savedIcon}>📍</div>
+                                            <span className={styles.savedLabel}>{place.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className={styles.savedEmpty}>
+                                    <h4>No Saved Locations</h4>
+                                    <p>Save your favorite destinations for faster booking.</p>
+                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                        <button className={styles.addSavedBtn} onClick={() => alert('Opening Map Selector...')}>📍 Select on Map</button>
+                                        <button className={styles.addSavedBtn} onClick={() => alert('Opening Address Form...')}>✏️ Enter Address</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                );
+            })()}
         </div>
     );
 };
